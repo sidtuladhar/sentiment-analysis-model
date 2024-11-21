@@ -1,11 +1,25 @@
 #include <stdio.h> 
 #include <stdlib.h>
 #include "cJSON.h"
+#include "utils.h"
 
 #define MAX_LINE_LENGTH 10000
 
+struct Vocabulary vocab[MAX_WORDS];
+struct ClassInfo classes[MAX_CLASSES];
+
+void init_classes() {
+  classes[0].class_name = "Positive";
+  classes[0].word_count = 0;
+  classes[0].document_count = 0;
+
+  classes[1].class_name = "Negative";
+  classes[1].word_count = 0;
+  classes[1].document_count = 0;
+}
 
 int main() {
+    init_classes();
 
     FILE *fp = fopen("./data/raw/videogame.jsonl", "r"); 
     if (fp == NULL) { 
@@ -19,15 +33,14 @@ int main() {
         fclose(fp);
     }
 
-    for (int i = 0; i <= 10; i++) {
+    int count = 0;
 
+    while (1) {
         if (fgets(line, MAX_LINE_LENGTH, fp) == NULL) {
-            fprintf(stderr, "Error reading line %d or end of file reached.\n", i);
+            printf("Error reading line or end of file reached: %d", count);
             break;
         }
-
-        // printf("parsing line %d: %s", i, line);
-
+        count++; 
         cJSON *json = cJSON_Parse(line);
         if (json == NULL) { // review too long
             // const char *error_ptr = cJSON_GetErrorPtr();
@@ -41,17 +54,23 @@ int main() {
         cJSON *review = cJSON_GetObjectItemCaseSensitive(json, "text");
         cJSON *title = cJSON_GetObjectItemCaseSensitive(json, "title");
         cJSON *rating = cJSON_GetObjectItemCaseSensitive(json, "rating");
+       
 
-        if (title->valuestring != NULL) {
-            printf("title: %s\n", title->valuestring);
+        if (!cJSON_IsNumber(rating)) {
+          // printf("Rating unavailable at %d\n", count);
+          continue;
         }
-        if (rating->valueint != 0) {
-            
-            printf("rating: %d\n", rating->valueint);
+
+        if (rating->valueint >= 4) {
+          classes[0].document_count++;
+        } else if (rating->valueint <= 2) {
+          classes[1].document_count++;
         }
+        
         cJSON_Delete(json);
     }
     fclose(fp);    
-
+    printf("pos: %d\n", classes[0].document_count);
+    free(line);
 return 0;
 }
