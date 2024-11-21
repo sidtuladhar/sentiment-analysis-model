@@ -1,5 +1,7 @@
 #include <stdio.h> 
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include "cJSON.h"
 #include "utils.h"
 
@@ -18,6 +20,31 @@ void init_classes() {
   classes[1].document_count = 0;
 }
 
+void to_lowercase(char *word) {
+    for (int i = 0; word[i]; i++) {
+        word[i] = tolower(word[i]);
+    }
+}
+
+void parse_word(const char *review, const int isPositive) {
+  char buffer[MAX_LINE_LENGTH];
+  strncpy(buffer, review, sizeof(buffer) - 1);
+  buffer[sizeof(buffer) - 1] = '\0';
+  
+  char *word = strtok(buffer, " ,.-!?\"\'\n");
+  
+  while (word != NULL) {
+    to_lowercase(word);
+
+    if (isPositive) {
+      classes[0].word_count++;
+    } else {
+      classes[0].word_count++;
+    }
+    word = strtok(buffer, " ,.-!?\"\'\n");
+    
+  }
+}
 int main() {
     init_classes();
 
@@ -63,7 +90,7 @@ int main() {
 
         if (rating->valueint >= 4) {
           classes[0].document_count++;
-        } else if (rating->valueint <= 2) {
+        } else {
           classes[1].document_count++;
         }
         
@@ -72,5 +99,6 @@ int main() {
     fclose(fp);    
     printf("pos: %d\n", classes[0].document_count);
     free(line);
+
 return 0;
 }
