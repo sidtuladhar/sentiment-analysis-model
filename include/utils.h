@@ -4,6 +4,7 @@
 #define MAX_CLASSES 2
 #define MAX_WORDS 4000
 #define HASH_SIZE 1048859
+#define MAX_WORD_LEN 20
 
 struct Vocabulary {
   char *word;
@@ -16,6 +17,10 @@ struct ClassInfo {
   int word_count;
   int document_count;
 };
+
+extern struct Vocabulary *hashtable[HASH_SIZE];
+extern struct ClassInfo classes[MAX_CLASSES];
+extern int total_entries;
 
 void to_lowercase(char *word);
 

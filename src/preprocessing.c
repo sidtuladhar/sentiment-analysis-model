@@ -34,7 +34,7 @@ void init_classes() {
 void word_to_vocab(const char *word, int isPositive) {
   if (strcmp("and", word) == 0 || strcmp("the", word) == 0 || strcmp("is", word) == 0 
     || strcmp("a", word) == 0 || strcmp("of", word) == 0 || strcmp("in", word) == 0
-    || strlen(word) >= 20) {
+    || strlen(word) >= MAX_WORD_LEN) {
     return;
   }
   unsigned int index = hash(word);
