@@ -137,10 +137,10 @@ void preprocess() {
     }
 
     if (rating->valueint >= 4) {
-      classes[0].document_count++;
+      classes[1].document_count++;
       parse_word(review->valuestring, 1);
     } else {
-      classes[1].document_count++;
+      classes[0].document_count++;
       parse_word(review->valuestring, 0);
     }
     cJSON_Delete(json);

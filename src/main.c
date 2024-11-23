@@ -2,7 +2,7 @@
 #include "preprocessing.h"
 #include "load.h"
 
-int reprocess = 1;
+int reprocess = 0;
 
 int main() {
   
@@ -12,5 +12,6 @@ int main() {
 
   load();
 
+  read_and_calculate();
   return 0;
 }

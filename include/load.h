@@ -3,4 +3,6 @@
 
 void load();
 
+void read_and_calculate();
+
 #endif
