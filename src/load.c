@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "load.h"
 #include "utils.h"
 #include "cJSON.h"
@@ -50,9 +51,9 @@ void load() {
     printf("Error format: %s\n", line);
   } 
   fclose(file);
-  printf("Finished loading! Lines: %d\n", total_entries);
-  printf("word: %d, %d\n", classes[0].word_count, classes[1].word_count);
-  printf("docs: %d, %d\n", classes[0].document_count, classes[1].document_count);
+  // printf("Finished loading! Lines: %d\n", total_entries);
+  // printf("word: %d, %d\n", classes[0].word_count, classes[1].word_count);
+  // printf("docs: %d, %d\n", classes[0].document_count, classes[1].document_count);
 
 }
 
@@ -62,8 +63,8 @@ static void calculate_bayes(const char *review, const int isPositive, float p_po
   buffer[sizeof(buffer) - 1] = '\0';
   
   char *word = strtok(buffer, " ,.-!?\"\'\n/<>:;()");
-  double bayes_p_positive = p_positive;
-  double bayes_p_negative = p_negative;
+  double bayes_p_positive = log(p_positive);
+  double bayes_p_negative = log(p_negative);
   while (word != NULL) {
     clean_word(word);
 
@@ -75,8 +76,8 @@ static void calculate_bayes(const char *review, const int isPositive, float p_po
       int exists = 0;
       while (entry != NULL) {
         if (strcmp(entry->word, word) == 0) {
-          bayes_p_positive *= (1 + entry->classes[1]) / ((double)vocab_size + total_positive_words);
-          bayes_p_negative *= (1 + entry->classes[0]) / ((double)vocab_size + total_negative_words);
+          bayes_p_positive *= log((1 + entry->classes[1]) / ((double)vocab_size + total_positive_words));
+          bayes_p_negative *= log((1 + entry->classes[0]) / ((double)vocab_size + total_negative_words));
           exists = 1;
           break;
         }
@@ -84,8 +85,8 @@ static void calculate_bayes(const char *review, const int isPositive, float p_po
       }
 
       if (exists == 0) {
-        bayes_p_positive *= 1 / ((double)vocab_size + total_positive_words);
-        bayes_p_negative *= 1 / ((double)vocab_size + total_negative_words);
+        bayes_p_positive *= log(1 / ((double)vocab_size + total_positive_words));
+        bayes_p_negative *= log(1 / ((double)vocab_size + total_negative_words));
       }
     }
     word = strtok(NULL, " ,.-!?\"\'\n/<>:;()");
@@ -93,12 +94,9 @@ static void calculate_bayes(const char *review, const int isPositive, float p_po
 
   if ((bayes_p_positive > bayes_p_negative && isPositive == 1) || (bayes_p_negative > bayes_p_positive && isPositive == 0)) {
     success_reviews++;
-    printf("SUCCESS\n");
   } else if (bayes_p_negative == bayes_p_positive) {
-    printf("ZERO ERROR\n");
     zero_errors++;
   } else {
-    printf("FAIL\n");
     fails++; 
   } 
   // printf("Positive: %.25f, Negative: %.25f, isPositive: %d\n", bayes_p_positive, bayes_p_negative, isPositive);
