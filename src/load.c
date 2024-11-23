@@ -7,6 +7,8 @@
 #include "cJSON.h"
 #include "preprocessing.h"
 
+#define THRESHOLD 0
+
 int test_reviews = 0;
 int success_reviews = 0;
 int zero_errors = 0;
@@ -76,6 +78,10 @@ static void calculate_bayes(const char *review, const int isPositive, float p_po
       int exists = 0;
       while (entry != NULL) {
         if (strcmp(entry->word, word) == 0) {
+          if (entry->classes[0] + entry->classes[1] > THRESHOLD) {
+            exists = 1; 
+            break;
+          }
           bayes_p_positive *= log((1 + entry->classes[1]) / ((double)vocab_size + total_positive_words));
           bayes_p_negative *= log((1 + entry->classes[0]) / ((double)vocab_size + total_negative_words));
           exists = 1;
@@ -96,6 +102,7 @@ static void calculate_bayes(const char *review, const int isPositive, float p_po
     success_reviews++;
   } else if (bayes_p_negative == bayes_p_positive) {
     zero_errors++;
+    // printf("Review: %s\n", review); 
   } else {
     fails++; 
   } 
@@ -145,7 +152,7 @@ void read_and_calculate() {
 
     if (rating->valueint >= 4) {
       calculate_bayes(review->valuestring, 1, p_positive, p_negative, total_positive_words, total_negative_words, vocab_size);
-    } else {
+    } else if (rating->valueint <= 2) {
       calculate_bayes(review->valuestring, 0, p_positive, p_negative, total_positive_words, total_negative_words, vocab_size);
     }
 

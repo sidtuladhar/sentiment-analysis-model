@@ -8,7 +8,7 @@ This project implements a Naive Bayes classifier in C to perform sentiment analy
 - Hashmap-based vocabulary storage for fast lookups.
 - Probabilistic sentiment classification using Naive Bayes.
 - Logging support for debugging and analyzing results.
-- **49.95%** accuracy on the test dataset.
+- **67%** accuracy on the test dataset.
 
 ## Requirements
 - C Compiler (e.g., GCC)

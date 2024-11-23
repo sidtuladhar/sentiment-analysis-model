@@ -135,11 +135,11 @@ void preprocess() {
       // printf("Rating unavailable at %d\n", count);
       continue;
     }
-
-    if (rating->valueint >= 4) {
+    
+    if (rating->valueint >= 4 && (classes[1].document_count - classes[0].document_count < 100000)) {
       classes[1].document_count++;
       parse_word(review->valuestring, 1);
-    } else {
+    } else if (rating->valueint <= 2){
       classes[0].document_count++;
       parse_word(review->valuestring, 0);
     }
