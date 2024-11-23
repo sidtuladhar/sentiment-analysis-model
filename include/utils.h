@@ -25,4 +25,6 @@ extern int total_entries;
 void to_lowercase(char *word);
 
 unsigned int hash(const char *word);
+
+void clean_word(char *word);
 #endif

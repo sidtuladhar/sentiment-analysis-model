@@ -5,4 +5,6 @@
 
 void preprocess();
 
+void init_classes();
+
 #endif

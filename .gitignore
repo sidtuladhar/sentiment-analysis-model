@@ -1,5 +1,5 @@
 # Ignore raw data directory
-/data/raw/
+/data/
 
 # Ignore build and bin directories
 /build/

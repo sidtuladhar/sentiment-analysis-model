@@ -12,13 +12,13 @@ struct ClassInfo classes[MAX_CLASSES];
 int total_entries = 0;
 int existing = 0;
 
-void check_load_factor() {
-    float load_factor = (float)total_entries / HASH_SIZE;
-    printf("Load Factor: %.2f\n", load_factor);
+static void check_load_factor() {
+  float load_factor = (float)total_entries / HASH_SIZE;
+  printf("Load Factor: %.2f\n", load_factor);
 
-    if (load_factor > 0.7) {
-        printf("Warning: Load factor exceeds 0.7. Consider resizing.\n");
-    }
+  if (load_factor > 0.7) {
+      printf("Warning: Load factor exceeds 0.7. Consider resizing.\n");
+  }
 }
 
 void init_classes() {
@@ -31,10 +31,9 @@ void init_classes() {
   classes[1].document_count = 0;
 }
 
-void word_to_vocab(const char *word, int isPositive) {
+static void word_to_vocab(const char *word, int isPositive) {
   if (strcmp("and", word) == 0 || strcmp("the", word) == 0 || strcmp("is", word) == 0 
-    || strcmp("a", word) == 0 || strcmp("of", word) == 0 || strcmp("in", word) == 0
-    || strlen(word) >= MAX_WORD_LEN) {
+    || strcmp("a", word) == 0 || strcmp("of", word) == 0 || strcmp("in", word) == 0) {
     return;
   }
   unsigned int index = hash(word);
@@ -67,11 +66,29 @@ void parse_word(const char *review, const int isPositive) {
   char *word = strtok(buffer, " ,.-!?\"\'\n/<>:;()");
   
   while (word != NULL) {
-    to_lowercase(word);
-    classes[isPositive].word_count++;
-    word_to_vocab(word, isPositive); 
+    clean_word(word);
+
+    if (strlen(word) > 1 && strlen(word) <= MAX_WORD_LEN) {
+      to_lowercase(word); 
+      classes[isPositive].word_count++;
+      word_to_vocab(word, isPositive);
+    }
     word = strtok(NULL, " ,.-!?\"\'\n/<>:;()");
   }
+}
+
+void write() {
+FILE *file = fopen("./data/naive_bayes_model.txt", "w");
+  for (int i = 0; i < HASH_SIZE; i++) {
+    struct Vocabulary *entry = hashtable[i];
+    while (entry) {
+      fprintf(file, "%s %d %d\n", entry->word, entry->classes[0], entry->classes[1]);
+      entry = entry->next;
+    }
+  }
+  fprintf(file, "%d %d\n", classes[0].word_count, classes[1].word_count);
+  fprintf(file, "%d %d\n", classes[0].document_count, classes[1].document_count);
+  fclose(file);
 }
 
 void preprocess() {
@@ -83,6 +100,8 @@ void preprocess() {
     return; 
   }
 
+  FILE *test_fp = fopen("./data/test_data.jsonl", "w");
+
   char *line = malloc(MAX_LINE_LENGTH);
   if (line == NULL) {
     perror("Memory allocation failed");
@@ -92,11 +111,16 @@ void preprocess() {
   int count = 0;
 
   while (1) {
+    
+    count++; 
     if (fgets(line, MAX_LINE_LENGTH, fp) == NULL) {
       printf("Error reading line or end of file reached: %d\n", count);
       break;
+    } else if (count > 3700000) {
+      fprintf(test_fp, "%s\n", line);
+      continue;
     }
-    count++; 
+
     cJSON *json = cJSON_Parse(line);
     if (json == NULL) { 
       continue;
@@ -121,19 +145,12 @@ void preprocess() {
     }
     cJSON_Delete(json);
   }
-  fclose(fp);    
+
+  fclose(fp);
+  fclose(test_fp);
   free(line);
   
-  printf("Done processing.\n");
-
-  FILE *file = fopen("./data/naive_bayes_model.txt", "w");
-  for (int i = 0; i < HASH_SIZE; i++) {
-    struct Vocabulary *entry = hashtable[i];
-    while (entry) {
-        fprintf(file, "%s %d %d\n", entry->word, entry->classes[0], entry->classes[1]);
-        entry = entry->next;
-    }
+  printf("Done processing. Total entries:%d\n", total_entries);
+  
+  write();
   }
-  fprintf(file, "%d %d\n", classes[0].word_count, classes[1].word_count);
-  fclose(file);
-}
