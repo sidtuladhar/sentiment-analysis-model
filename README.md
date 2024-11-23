@@ -22,7 +22,6 @@ This project implements a Naive Bayes classifier in C to perform sentiment analy
 3. **Classification**: The model calculates probabilities using Naive Bayes and logs classification results.
 4. **Performance Metrics**: Reports accuracy, failures, and zero-error cases for evaluation.
 
-   ```bash
 ## Dataset Information
 The dataset is **not included** in the repository. Instead, you can access the dataset [here](https://amazon-reviews-2023.github.io/main.html).
 
